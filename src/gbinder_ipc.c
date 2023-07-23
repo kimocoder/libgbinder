@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2018-2022 Jolla Ltd.
- * Copyright (C) 2018-2022 Slava Monich <slava.monich@jolla.com>
+ * Copyright (C) 2018-2023 Slava Monich <slava@monich.com>
  *
  * You may use this file under the terms of BSD license as follows:
  *
@@ -30,7 +30,6 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#define GLIB_DISABLE_DEPRECATION_WARNINGS
 #define _GNU_SOURCE  /* pthread_*_np */
 
 #include "gbinder_ipc.h"
@@ -2194,7 +2193,6 @@ gbinder_ipc_exit()
     for (i = ipcs; i; i = i->next) {
         GBinderIpc* ipc = THIS(i->data);
         GBinderIpcPriv* priv = ipc->priv;
-        GThreadPool* pool = priv->tx_pool;
         GSList* local_objs = NULL;
         GSList* tx_keys = NULL;
         GSList* k;
@@ -2205,8 +2203,12 @@ gbinder_ipc_exit()
         gbinder_ipc_stop_loopers(ipc);
 
         /* Make sure pooled transaction complete too */
-        priv->tx_pool = NULL;
-        g_thread_pool_free(pool, FALSE, TRUE);
+        if (priv->tx_pool) {
+            GThreadPool* pool = priv->tx_pool;
+
+            priv->tx_pool = NULL;
+            g_thread_pool_free(pool, FALSE, TRUE);
+        }
 
         /*
          * Since this function is supposed to be invoked on the main thread,
