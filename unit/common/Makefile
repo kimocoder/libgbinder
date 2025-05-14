@@ -37,10 +37,10 @@ RELEASE_DEPS = libglibutil_release
 .PHONY: libglibutil_debug libglibutil_release
 
 libglibutil_debug:
-	make -C $(LIBGLIBUTIL_PATH) debug
+	$(MAKE) -C $(LIBGLIBUTIL_PATH) debug
 
 libglibutil_release:
-	make -C $(LIBGLIBUTIL_PATH) release
+	$(MAKE) -C $(LIBGLIBUTIL_PATH) release
 
 endif
 
@@ -66,6 +66,7 @@ COVERAGE_BUILD_DIR = $(BUILD_DIR)/coverage
 # Tools and flags
 #
 
+PKG_CONFIG ?= pkg-config
 CC ?= $(CROSS_COMPILE)gcc
 LD = $(CC)
 WARNINGS += -Wall -Wno-deprecated-declarations
@@ -76,10 +77,10 @@ BASE_FLAGS = -fPIC
 BASE_LDFLAGS = $(BASE_FLAGS) $(LDFLAGS)
 BASE_CFLAGS = $(BASE_FLAGS) $(CFLAGS)
 FULL_CFLAGS = $(BASE_CFLAGS) $(DEFINES) $(WARNINGS) $(INCLUDES) -MMD -MP \
-  $(shell pkg-config --cflags $(PKGS))
+  $(shell $(PKG_CONFIG) --cflags $(PKGS))
 FULL_LDFLAGS = $(BASE_LDFLAGS)
-LIBS = $(shell pkg-config --libs $(PKGS)) -lpthread
-QUIET_MAKE = make --no-print-directory
+LIBS = $(shell $(PKG_CONFIG) --libs $(PKGS)) -lpthread
+QUIET_MAKE = $(MAKE) --no-print-directory
 DEBUG_FLAGS = -g
 RELEASE_FLAGS =
 COVERAGE_FLAGS = -g
@@ -158,7 +159,7 @@ unitclean:
 clean: unitclean
 
 cleaner: unitclean
-	@make -C $(LIB_DIR) clean
+	@$(MAKE) -C $(LIB_DIR) clean
 
 test_banner:
 	@echo "===========" $(EXE) "=========== "

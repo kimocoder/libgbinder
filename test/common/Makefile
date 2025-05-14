@@ -43,6 +43,7 @@ RELEASE_BUILD_DIR = $(BUILD_DIR)/release
 # Tools and flags
 #
 
+PKG_CONFIG ?= pkg-config
 CC ?= $(CROSS_COMPILE)gcc
 LD = $(CC)
 WARNINGS = -Wall
@@ -50,9 +51,9 @@ DEFINES += -DGLIB_VERSION_MAX_ALLOWED=GLIB_VERSION_2_32 \
   -DGLIB_VERSION_MIN_REQUIRED=GLIB_VERSION_MAX_ALLOWED
 INCLUDES = -I$(LIB_DIR)/include
 CFLAGS += -fPIC $(DEFINES) $(WARNINGS) $(INCLUDES) -MMD -MP \
-  $(shell pkg-config --cflags $(PKGS))
-LDFLAGS += -pie $(shell pkg-config --libs $(PKGS))
-QUIET_MAKE = make --no-print-directory
+  $(shell $(PKG_CONFIG) --cflags $(PKGS))
+LDFLAGS += -pie $(shell $(PKG_CONFIG) --libs $(PKGS))
+QUIET_MAKE = $(MAKE) --no-print-directory
 DEBUG_FLAGS = -g
 RELEASE_FLAGS =
 
@@ -110,7 +111,7 @@ clean:
 	rm -fr $(BUILD_DIR)
 
 cleaner: clean
-	@make -C $(LIB_DIR) clean
+	@$(MAKE) -C $(LIB_DIR) clean
 
 $(DEBUG_BUILD_DIR):
 	mkdir -p $@
